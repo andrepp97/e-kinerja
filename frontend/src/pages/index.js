@@ -1,0 +1,6 @@
+export { default as Login } from './auth/login'
+export { default as Users } from './user/users'
+export { default as PageNotFound } from './others/404'
+export { default as Dashboard } from './dashboard/dashboard'
+export { default as Attendance } from './activity/attendance'
+export { default as Assignment } from './activity/assignment'
