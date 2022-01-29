@@ -98,8 +98,8 @@ const Attendance = () => {
 
         const body = {
             user_id: userState.id,
-            clock_in: type == 'clockIn' ? date.toLocaleTimeString('en-GB') : null,
-            clock_out: type == 'clockOut' ? date.toLocaleTimeString('en-GB') : null,
+            clock_in: type == 'clockIn' ? date.toLocaleTimeString('en-GB') : '00:00:00',
+            clock_out: type == 'clockOut' ? date.toLocaleTimeString('en-GB') : '00:00:00',
         }
 
         httpRequest.post(`user/${type}`, body)
@@ -212,10 +212,10 @@ const Attendance = () => {
                                             style={moment(row.created_date).format('YYYY MM DD') == curdate ? { background: '#eaeaea' } : {}}
                                         >
                                             <TableCell>
-                                                {row.clock_in || '---'}
+                                                {row.clock_in == null || row.clock_in == '00:00:00' ? '---' : row.clock_in}
                                             </TableCell>
                                             <TableCell>
-                                                {row.clock_out || '---'}
+                                                {row.clock_out == null || row.clock_out == '00:00:00' ? '---' : row.clock_out}
                                             </TableCell>
                                             <TableCell>
                                                 {

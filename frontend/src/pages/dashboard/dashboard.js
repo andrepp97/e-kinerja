@@ -123,7 +123,10 @@ const Dashboard = () => {
                             </TableHead>
                             <TableBody>
                                 {assignments.map((row, index) => (
-                                    <TableRow key={index}>
+                                    <TableRow
+                                        key={index}
+                                        style={row.task_status == 'done' ? { background: '#eaeaea' } : {}}
+                                    >
                                         <TableCell>{row.task_title}</TableCell>
                                         <TableCell>{row.task_desc}</TableCell>
                                         {userState.role == 1 && <TableCell>{row.name}</TableCell>}
@@ -172,8 +175,12 @@ const Dashboard = () => {
                                                     key={index}
                                                     style={moment(row.created_date).format('YYYY MM DD') == curdate ? { background: '#eaeaea' } : {}}
                                                 >
-                                                    <TableCell>{row.clock_in || '---'}</TableCell>
-                                                    <TableCell>{row.clock_out || '---'}</TableCell>
+                                                    <TableCell>
+                                                        {row.clock_in == null || row.clock_in == '00:00:00' ? '---' : row.clock_in}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {row.clock_out == null || row.clock_out == '00:00:00' ? '---' : row.clock_out}
+                                                    </TableCell>
                                                     <TableCell>
                                                         {
                                                             moment(row.created_date).format('YYYY MM DD') == curdate

@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import AddIcon from '@material-ui/icons/Add';
 import BlockIcon from '@material-ui/icons/Block';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Table from '@material-ui/core/Table';
@@ -198,20 +199,24 @@ const Users = () => {
                                 {
                                     row.status === 'active'
                                         ? (
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => setSelected(row)}
-                                            >
-                                                <BlockIcon color='secondary' />
-                                            </IconButton>
+                                            <Tooltip title="Ban">
+                                                <IconButton
+                                                    size='small'
+                                                    onClick={() => setSelected(row)}
+                                                >
+                                                    <BlockIcon color='secondary' />
+                                                </IconButton>
+                                            </Tooltip>
                                         )
                                         : (
-                                            <IconButton
+                                            <Button
                                                 size='small'
+                                                color='primary'
+                                                variant='outlined'
                                                 onClick={() => setSelected2(row)}
                                             >
-                                                <CheckCircleIcon color='primary' />
-                                            </IconButton>
+                                                Activate
+                                            </Button>
                                         )
                                 }
                             </TableCell>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import AddIcon from '@material-ui/icons/Add';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -156,6 +157,7 @@ const Assignment = () => {
                                             ? (
                                                 <a href={baseUrl + row.attachment} target="_blank" rel="noopener noreferrer" download>
                                                     <Button
+                                                        startIcon={<GetAppIcon />}
                                                         variant='contained'
                                                         color='primary'
                                                         size='small'
