@@ -33,16 +33,16 @@ module.exports = {
     },
 
     userClockIn: (req, res) => {
-        req.body.created_date = new Date()
+        const { user_id, clock_in, clock_out } = req.body
 
-        let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${req.body.user_id}`
+        let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
         sqlDB.query(query, (err, results) => {
             if (results.length > 0) {
                 res.status(400).send('You already clocked in today')
                 return
             }
 
-            let query2 = `INSERT INTO attendances SET ?`
+            let query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
             sqlDB.query(query2, req.body, (err2, results2) => {
                 if (err2) return res.status(500).send(err2)
 
@@ -52,7 +52,7 @@ module.exports = {
     },
 
     userClockOut: (req, res) => {
-        req.body.created_date = new Date()
+        const { user_id, clock_in, clock_out } = req.body
 
         let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${req.body.user_id}`
         sqlDB.query(query, (err, results) => {
@@ -70,10 +70,10 @@ module.exports = {
                     return
                 }
             } else {
-                query2 = `INSERT INTO attendances SET ?`
+                query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
             }
 
-            sqlDB.query(query2, req.body, (err, results) => {
+            sqlDB.query(query2, (err, results) => {
                 if (err) return res.status(500).send(err)
 
                 res.status(200).send(results)

@@ -61,12 +61,13 @@ module.exports = {
     },
 
     getAllAssignment: (req, res) => {
-        const where = req.query.role == 2 ? `WHERE user_id = ${req.query.id}` : ''
+        const where = req.query.role == 2 ? `AND user_id = ${req.query.id}` : ''
         const limit = req.query.limit ? `LIMIT ${req.query.limit}` : ''
 
         let query = `SELECT *, name, a.status as 'task_status', a.id as 'task_id'
                      FROM assignments a
-                     JOIN users u ON u.id = a.user_id ${where}
+                     JOIN users u ON u.id = a.user_id
+                     WHERE u.status = 'active' ${where}
                      ORDER BY a.created_date DESC ${limit}`
         sqlDB.query(query, (err, results) => {
             if (err) return res.status(500).send(err)
