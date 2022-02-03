@@ -9,7 +9,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from '../../context/authProvider';
 import httpRequest from '../../api/axios';
-import Logo from '../../logo.png';
+import Logo from '../../assets/logo.png';
 
 // Style
 const useStyles = makeStyles(() => ({
