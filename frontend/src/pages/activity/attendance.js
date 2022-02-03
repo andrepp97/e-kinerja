@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 import Table from '@material-ui/core/Table';
@@ -9,11 +9,11 @@ import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { makeStyles } from '@material-ui/core/styles';
-import { CardContent, Grid, Card, Button } from '@material-ui/core/';
+import { Grid, Paper, Button } from '@material-ui/core/';
 import { useAuth } from '../../context/authProvider';
 import httpRequest from '../../api/axios';
 
-// Style
+// Static
 const useStyles = makeStyles(() => ({
     root: {
         padding: '42px 30px',
@@ -43,7 +43,6 @@ const useStyles = makeStyles(() => ({
         opacity: .75,
         fontSize: '18px',
         fontWeight: '600',
-        marginBottom: '24px',
     },
     time: {
         fontSize: '3.5vw',
@@ -54,8 +53,21 @@ const useStyles = makeStyles(() => ({
         margin: '16px 0 16px 0',
     },
 }))
+const timeDiffFormat = (time) => {
+    if (time !== '---') {
+        const arr = time.split(':')
 
-// Static
+        if (arr[0] !== '00') {
+            return arr[0] + ' hour(s) ' + arr[1] + ' minute(s)'
+        } else if (arr[1] !== '00') {
+            return arr[1] + ' minute(s)'
+        } else {
+            return arr[2] + ' second(s)'
+        }
+    } else {
+        return '---'
+    }
+}
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const curdate = moment(new Date()).format('YYYY MM DD')
 
@@ -70,6 +82,17 @@ const Attendance = () => {
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState(null)
 
+    // Get Data
+    const getAttendanceList = useCallback(() => {
+        const body = {
+            id: userState.id,
+            month: months.indexOf(selectedMonth) + 1,
+        }
+        httpRequest.post('user/getAttendanceList', body)
+            .then(({ data }) => setData(data))
+            .catch(err => console.log(err.response))
+    }, [userState, selectedMonth])
+
     // Lifecycle
     useEffect(() => {
         const timerID = setInterval(() => tick(), 1000)
@@ -82,7 +105,7 @@ const Attendance = () => {
 
     useEffect(() => {
         if (selectedMonth) getAttendanceList()
-    }, [selectedMonth])
+    }, [selectedMonth, getAttendanceList])
 
     // Function
     const tick = () => setDate(new Date())
@@ -98,13 +121,13 @@ const Attendance = () => {
 
         const body = {
             user_id: userState.id,
-            clock_in: type == 'clockIn' ? date.toLocaleTimeString('en-GB') : '00:00:00',
-            clock_out: type == 'clockOut' ? date.toLocaleTimeString('en-GB') : '00:00:00',
+            clock_in: type === 'clockIn' ? date.toLocaleTimeString('en-GB') : '00:00:00',
+            clock_out: type === 'clockOut' ? date.toLocaleTimeString('en-GB') : '00:00:00',
         }
 
         httpRequest.post(`user/${type}`, body)
             .then(() => {
-                Swal.fire(`${type == 'clockIn' ? 'Clocked In' : 'Clocked Out'}`, '', 'success')
+                Swal.fire(`${type === 'clockIn' ? 'Clocked In' : 'Clocked Out'}`, '', 'success')
                 getAttendanceList()
             })
             .catch(err => {
@@ -112,16 +135,6 @@ const Attendance = () => {
                 Swal.fire(err.response.data, '', 'warning')
             })
             .finally(() => setLoading(false))
-    }
-
-    const getAttendanceList = () => {
-        const body = {
-            id: userState.id,
-            month: months.indexOf(selectedMonth) + 1,
-        }
-        httpRequest.post('user/getAttendanceList', body)
-            .then(({ data }) => setData(data))
-            .catch(err => console.log(err.response))
     }
 
     // Render
@@ -134,47 +147,47 @@ const Attendance = () => {
 
             <hr className={classes.opacity70} />
 
-            <Card
-                variant="outlined"
+            <Paper
+                elevation={3}
                 className="mt-3 p-3"
             >
-                <CardContent>
-                    <Grid
-                        container
-                        justifyContent='center'
-                        className={classes.dateText}
-                    >
+                <Grid
+                    container
+                    justifyContent='center'
+                    className={classes.dateText}
+                >
+                    <p>
                         {moment().format("DD MMMM YYYY")}
-                    </Grid>
-                    <Grid
-                        container
-                        justifyContent='center'
-                        className={classes.time}
+                    </p>
+                </Grid>
+                <Grid
+                    container
+                    justifyContent='center'
+                    className={classes.time}
+                >
+                    {date.toLocaleTimeString('en-GB')}
+                </Grid>
+                <div className='flex-center mt-2'>
+                    <Button
+                        color='primary'
+                        variant='contained'
+                        className={classes.m3}
+                        onClick={() => userClockIn('clockIn')}
+                        disabled={loading}
                     >
-                        {date.toLocaleTimeString('en-GB')}
-                    </Grid>
-                    <div className='flex-center mt-2'>
-                        <Button
-                            color='primary'
-                            variant='contained'
-                            className={classes.m3}
-                            onClick={() => userClockIn('clockIn')}
-                            disabled={loading}
-                        >
-                            Clock In
-                        </Button>
-                        <Button
-                            color='primary'
-                            variant='contained'
-                            className={classes.m3}
-                            onClick={() => userClockIn('clockOut')}
-                            disabled={loading}
-                        >
-                            Clock Out
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                        Clock In
+                    </Button>
+                    <Button
+                        color='primary'
+                        variant='contained'
+                        className={classes.m3}
+                        onClick={() => userClockIn('clockOut')}
+                        disabled={loading}
+                    >
+                        Clock Out
+                    </Button>
+                </div>
+            </Paper>
 
             <div className='my-4'>
                 <p className={classes.dateText}>
@@ -191,13 +204,16 @@ const Attendance = () => {
                 <Table style={{ width: 'auto' }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '18vw' }}>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
                                 Clock In
                             </TableCell>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '18vw' }}>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
                                 Clock Out
                             </TableCell>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '18vw' }}>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
+                                Total Hour(s)
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
                                 Date
                             </TableCell>
                         </TableRow>
@@ -208,18 +224,22 @@ const Attendance = () => {
                                 ? data.length
                                     ? data.map((row) => (
                                         <TableRow
+                                            hover
                                             key={row.id}
-                                            style={moment(row.created_date).format('YYYY MM DD') == curdate ? { background: '#eaeaea' } : {}}
+                                            selected={moment(row.created_date).format('YYYY MM DD') === curdate}
                                         >
                                             <TableCell>
-                                                {row.clock_in == null || row.clock_in == '00:00:00' ? '---' : row.clock_in}
+                                                {row.clock_in === null || row.clock_in === '00:00:00' ? '---' : row.clock_in}
                                             </TableCell>
                                             <TableCell>
-                                                {row.clock_out == null || row.clock_out == '00:00:00' ? '---' : row.clock_out}
+                                                {row.clock_out === null || row.clock_out === '00:00:00' ? '---' : row.clock_out}
+                                            </TableCell>
+                                            <TableCell>
+                                                {timeDiffFormat(row.total)}
                                             </TableCell>
                                             <TableCell>
                                                 {
-                                                    moment(row.created_date).format('YYYY MM DD') == curdate
+                                                    moment(row.created_date).format('YYYY MM DD') === curdate
                                                         ? (
                                                             <>
                                                                 {moment(row.created_date).format('DD MMMM YYYY')}
@@ -232,9 +252,11 @@ const Attendance = () => {
                                         </TableRow>
                                     ))
                                     : (
-                                        <p className='text-center'>
-                                            Currently nothing to show here
-                                        </p>
+                                        <TableRow>
+                                            <TableCell>
+                                                Currently nothing to show here
+                                            </TableCell>
+                                        </TableRow>
                                     )
                                 : null
                         }
