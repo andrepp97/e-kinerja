@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import clsx from 'clsx';
 import List from '@material-ui/core/List';
@@ -58,6 +58,7 @@ const Sidebar = (props) => {
     } = props
 
     const { userState, dispatch } = useAuth()
+    const [path, setPath] = useState('')
 
     const handleLogout = () => {
         Swal.fire({
@@ -105,7 +106,11 @@ const Sidebar = (props) => {
                                 to={menu.url}
                                 className="url-text"
                             >
-                                <ListItem button>
+                                <ListItem
+                                    button
+                                    selected={menu.url === path}
+                                    onClick={() => setPath(menu.url)}
+                                >
                                     <ListItemIcon>
                                         {menu.icon}
                                     </ListItemIcon>
@@ -119,7 +124,11 @@ const Sidebar = (props) => {
                                 to={menu.url}
                                 className="url-text"
                             >
-                                <ListItem button>
+                                <ListItem
+                                    button
+                                    selected={menu.url === path}
+                                    onClick={() => setPath(menu.url)}
+                                >
                                     <ListItemIcon>
                                         {menu.icon}
                                     </ListItemIcon>
