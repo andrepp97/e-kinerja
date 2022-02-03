@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import AddIcon from '@material-ui/icons/Add';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -47,12 +49,6 @@ const Assignment = () => {
     const [upload, setUpload] = useState(false)
     const [open, setOpen] = useState(false)
 
-    // Lifecycle
-    useEffect(() => {
-        getUserData()
-        getAllAssignment()
-    }, [])
-
     // Get Data
     const getUserData = () => {
         httpRequest.get('admin/getAllUser')
@@ -60,7 +56,7 @@ const Assignment = () => {
             .catch(err => console.log(err.response))
     }
 
-    const getAllAssignment = () => {
+    const getAllAssignment = useCallback(() => {
         const param = {
             id: userState.id,
             role: userState.role,
@@ -68,6 +64,28 @@ const Assignment = () => {
         httpRequest.get('admin/getAllAssignment', { params: param })
             .then(({ data }) => setAssignments(data))
             .catch(err => console.log(err.response))
+    }, [userState])
+
+    // Lifecycle
+    useEffect(() => {
+        getUserData()
+        getAllAssignment()
+    }, [getAllAssignment])
+
+    // Function
+    const updateDuration = (val, id) => {
+        const reg = /^-?\d*\.?\d*$/
+        if (reg.test(val)) {
+            let delayDebounceFn = setTimeout(() => {
+                const body = { id, duration: val }
+
+                httpRequest.post('user/updateDuration', body)
+                    .then(() => { getAllAssignment() })
+                    .catch(err => console.log(err.response))
+            }, 1000)
+
+            return () => clearTimeout(delayDebounceFn)
+        }
     }
 
     const toogleAssignment = (check, task_id) => {
@@ -77,7 +95,7 @@ const Assignment = () => {
         }
 
         httpRequest.post('admin/toogleAssignment', body)
-            .then(({ data }) => getAllAssignment())
+            .then(() => getAllAssignment())
             .catch(err => console.log(err.response))
     }
 
@@ -121,95 +139,136 @@ const Assignment = () => {
                 New Assignment
             </Button>
 
-            <Table className="mt-3">
-                <TableHead>
-                    <TableRow>
-                        <TableCell style={{ fontWeight: 'bold' }}>
-                            Assignment Title
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
-                            Description
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
-                            Assigned to
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
-                            Attachment
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '100px' }}>
-                            Status
-                        </TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {assignments.map((row) => (
-                        <TableRow
-                            key={row.task_id}
-                            style={row.task_status == 'done' ? { background: '#eaeaea' } : {}}
-                        >
-                            <TableCell>{row.task_title}</TableCell>
-                            <TableCell>{row.task_desc}</TableCell>
-                            <TableCell>{row.name}</TableCell>
-                            <TableCell>
-                                {
-                                    userState.role == 2
-                                        ? row.attachment
-                                            ? (
-                                                <a href={baseUrl + row.attachment} target="_blank" rel="noopener noreferrer" download>
-                                                    <Button
-                                                        startIcon={<GetAppIcon />}
-                                                        variant='contained'
-                                                        color='primary'
-                                                        size='small'
-                                                    >
-                                                        Download
-                                                    </Button>
-                                                </a>
-                                            )
-                                            : (
-                                                <Button
-                                                    startIcon={<CloudUploadIcon />}
-                                                    variant="outlined"
-                                                    component="span"
-                                                    color="primary"
-                                                    size='small'
-                                                    onClick={() => {
-                                                        setSelected(row)
-                                                        setUpload(true)
-                                                    }}
-                                                >
-                                                    Upload
-                                                </Button>
-                                            )
-                                        : row.attachment
-                                            ? (
-                                                <a href={baseUrl + row.attachment} target="_blank" rel="noopener noreferrer" download>
-                                                    <Button
-                                                        variant='contained'
-                                                        color='primary'
-                                                        size='small'
-                                                    >
-                                                        Download
-                                                    </Button>
-                                                </a>
-                                            ) : '---'
-                                }
+            <Paper className="mt-2" elevation={3}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell style={{ fontWeight: 'bold' }}>
+                                Assignment Title
                             </TableCell>
-                            <TableCell>
-                                <Checkbox
-                                    color="primary"
-                                    disabled={userState.role == 1 ? false : true}
-                                    checked={row.task_status == 'done' ? true : false}
-                                    onChange={e => toogleAssignment(e.target.checked, row.task_id)}
-                                />
-                                <span>
-                                    {row.task_status}
-                                </span>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
+                                Description
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
+                                Duration
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
+                                Assigned to
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '120px' }}>
+                                Attachment
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '100px' }}>
+                                Status
                             </TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                    <TableBody>
+                        {
+                            assignments.length
+                                ? assignments.map((row) => (
+                                    <TableRow
+                                        hover
+                                        key={row.task_id}
+                                        selected={row.task_status === 'done'}
+                                    >
+                                        <TableCell>{row.task_title}</TableCell>
+                                        <TableCell>{row.task_desc}</TableCell>
+                                        <TableCell>
+                                            <div className='align-center'>
+                                                {
+                                                    userState.role === 1
+                                                        ? row.duration
+                                                        : (
+                                                            <TextField
+                                                                size='small'
+                                                                variant='outlined'
+                                                                defaultValue={row.duration}
+                                                                style={{ width: '50px', marginRight: '8px' }}
+                                                                onChange={e => updateDuration(e.target.value, row.task_id)}
+                                                            />
+                                                        )
+                                                }
+                                                &nbsp;hour(s)
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {row.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {
+                                                userState.role === 2
+                                                    ? row.attachment
+                                                        ? (
+                                                            <a href={baseUrl + row.attachment} target="_blank" rel="noopener noreferrer" download>
+                                                                <Button
+                                                                    startIcon={<GetAppIcon />}
+                                                                    variant='contained'
+                                                                    color='primary'
+                                                                    size='small'
+                                                                >
+                                                                    Download
+                                                                </Button>
+                                                            </a>
+                                                        )
+                                                        : (
+                                                            <Button
+                                                                startIcon={<CloudUploadIcon />}
+                                                                variant="outlined"
+                                                                component="span"
+                                                                color="primary"
+                                                                size='small'
+                                                                onClick={() => {
+                                                                    setSelected(row)
+                                                                    setUpload(true)
+                                                                }}
+                                                            >
+                                                                Upload
+                                                            </Button>
+                                                        )
+                                                    : row.attachment
+                                                        ? (
+                                                            <a
+                                                                href={baseUrl + row.attachment}
+                                                                className="no-decoration"
+                                                                rel="noopener noreferrer"
+                                                                target="_blank"
+                                                                download
+                                                            >
+                                                                <Button
+                                                                    variant='outlined'
+                                                                    color='primary'
+                                                                    size='small'
+                                                                >
+                                                                    Download
+                                                                </Button>
+                                                            </a>
+                                                        ) : '---'
+                                            }
+                                        </TableCell>
+                                        <TableCell>
+                                            <Checkbox
+                                                color="primary"
+                                                disabled={userState.role === 1 ? false : true}
+                                                checked={row.task_status === 'done' ? true : false}
+                                                onChange={e => toogleAssignment(e.target.checked, row.task_id)}
+                                            />
+                                            <span>
+                                                {row.task_status}
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                )) : (
+                                    <TableRow>
+                                        <TableCell>
+                                            Currently nothing to show here
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                        }
+                    </TableBody>
+                </Table>
+            </Paper>
 
             <Popup
                 open={open}
