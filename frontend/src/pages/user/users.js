@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 import AddIcon from '@material-ui/icons/Add';
 import BlockIcon from '@material-ui/icons/Block';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import Tooltip from '@material-ui/core/Tooltip';
+import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -42,20 +45,6 @@ const useStyles = makeStyles(() => ({
         paddingTop: '8px',
         paddingBottom: '8px',
     },
-    dateText: {
-        opacity: .75,
-        fontSize: '18px',
-        fontWeight: '600',
-        marginBottom: '24px',
-    },
-    time: {
-        fontSize: '3.5vw',
-        color: '#606060',
-    },
-    monthBox: {
-        width: '250px',
-        margin: '16px 0 16px 0',
-    },
 }))
 
 // Component
@@ -72,15 +61,11 @@ const Users = () => {
     // Get Data
     const getAllUser = () => {
         httpRequest.get('admin/getAllUser')
-            .then(({ data }) => {
-                setData(data)
-            })
-            .catch(err => {
-                console.log(err.response)
-            })
+            .then(({ data }) => setData(data))
+            .catch(err => console.log(err.response))
     }
 
-    const toogleBanUser = (status) => {
+    const toogleBanUser = useCallback((status) => {
         Swal.fire({
             title: `Are you sure you want to ban ${selected.name} ?`,
             showConfirmButton: false,
@@ -99,11 +84,13 @@ const Users = () => {
                         console.log(err.response)
                         Swal.fire(err.response.data, '', 'error')
                     })
+            } else {
+                setSelected(null)
             }
         })
-    }
+    }, [selected])
 
-    const toogleActivateUser = (status) => {
+    const toogleActivateUser = useCallback((status) => {
         Swal.fire({
             title: `Are you sure you want to activate ${selected2.name} ?`,
             showConfirmButton: true,
@@ -121,9 +108,11 @@ const Users = () => {
                         console.log(err.response)
                         Swal.fire(err.response.data, '', 'error')
                     })
+            } else {
+                setSelected2(null)
             }
         })
-    }
+    }, [selected2])
 
     // Lifecycle
     useEffect(() => {
@@ -132,11 +121,11 @@ const Users = () => {
 
     useEffect(() => {
         if (selected) toogleBanUser('inactive')
-    }, [selected])
+    }, [selected, toogleBanUser])
 
     useEffect(() => {
         if (selected2) toogleActivateUser('active')
-    }, [selected2])
+    }, [selected2, toogleActivateUser])
 
     // Render
     return (
@@ -164,66 +153,80 @@ const Users = () => {
                 New User
             </Button>
 
-            <Table className="mt-3">
-                <TableHead>
-                    <TableRow>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '12vw' }}>
-                            Name
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
-                            Username
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
-                            Join Date
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold', minWidth: '8vw' }}>
-                            Status
-                        </TableCell>
-                        <TableCell style={{ fontWeight: 'bold' }}>
-                            Action
-                        </TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {data ? data.map((row) => (
-                        <TableRow key={row.id}>
-                            <TableCell>
-                                {row.name}
+            <Paper className='mt-2' elevation={3}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '12vw' }}>
+                                Name
                             </TableCell>
-                            <TableCell>{row.username}</TableCell>
-                            <TableCell>
-                                {moment(row.created_date).format('DD MMMM YYYY')}
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
+                                Username
                             </TableCell>
-                            <TableCell>{row.status}</TableCell>
-                            <TableCell>
-                                {
-                                    row.status === 'active'
-                                        ? (
-                                            <Tooltip title="Ban">
-                                                <IconButton
-                                                    size='small'
-                                                    onClick={() => setSelected(row)}
-                                                >
-                                                    <BlockIcon color='secondary' />
-                                                </IconButton>
-                                            </Tooltip>
-                                        )
-                                        : (
-                                            <Button
-                                                size='small'
-                                                color='primary'
-                                                variant='outlined'
-                                                onClick={() => setSelected2(row)}
-                                            >
-                                                Activate
-                                            </Button>
-                                        )
-                                }
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
+                                Join Date
+                            </TableCell>
+                            <TableCell style={{ fontWeight: 'bold', minWidth: '8vw' }}>
+                                Status
+                            </TableCell>
+                            <TableCell align='center' style={{ fontWeight: 'bold' }}>
+                                Action
                             </TableCell>
                         </TableRow>
-                    )) : null}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                    <TableBody>
+                        {data ? data.map((row) => (
+                            <TableRow hover key={row.id}>
+                                <TableCell>
+                                    {row.name}
+                                </TableCell>
+                                <TableCell>{row.username}</TableCell>
+                                <TableCell>
+                                    {moment(row.created_date).format('DD MMMM YYYY')}
+                                </TableCell>
+                                <TableCell>{row.status}</TableCell>
+                                <TableCell>
+                                    <div className='flex-center'>
+                                        <Tooltip title="Details">
+                                            <Link to={`/user/${row.id}`}>
+                                                <IconButton size='small'>
+                                                    <InsertDriveFileIcon color='primary' />
+                                                </IconButton>
+                                            </Link>
+                                        </Tooltip>
+                                        <Divider
+                                            flexItem
+                                            className='mx-1'
+                                            orientation='vertical'
+                                        />
+                                        {
+                                            row.status === 'active'
+                                                ? (
+                                                    <Tooltip title="Ban">
+                                                        <IconButton size='small' onClick={() => setSelected(row)}>
+                                                            <BlockIcon color='secondary' />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )
+                                                : (
+                                                    <Button
+                                                        size='small'
+                                                        color='primary'
+                                                        className='ml-1'
+                                                        variant='outlined'
+                                                        onClick={() => setSelected2(row)}
+                                                    >
+                                                        Activate
+                                                    </Button>
+                                                )
+                                        }
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )) : null}
+                    </TableBody>
+                </Table>
+            </Paper>
 
         </div>
     );
