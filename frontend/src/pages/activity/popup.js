@@ -36,10 +36,12 @@ const TaskPopup = (props) => {
 
     // State
     const [title, setTitle] = useState('')
-    const [desc, setDesc] = useState('')
     const [user, setUser] = useState('')
+    const [duration, setDuration] = useState(1)
+    const [desc, setDesc] = useState('')
     const [errUser, setErrUser] = useState('')
     const [errTitle, setErrTitle] = useState('')
+    const [errDuration, setErrDuration] = useState('')
 
     // Function
     const saveAssignment = () => {
@@ -50,6 +52,13 @@ const TaskPopup = (props) => {
             setErrTitle("Title can't be empty")
         } else {
             setErrTitle('')
+        }
+
+        if (userState.role == 2 && !duration) {
+            err = "Duration must be greater than 0"
+            setErrDuration("Duration must be greater than 0")
+        } else {
+            setErrDuration('')
         }
 
         if (userState.role == 1 && !user) {
@@ -83,8 +92,10 @@ const TaskPopup = (props) => {
         setTitle('')
         setDesc('')
         setUser('')
+        setDuration(1)
         setErrUser('')
         setErrTitle('')
+        setErrDuration('')
     }
 
     // Render
@@ -112,19 +123,42 @@ const TaskPopup = (props) => {
                                     className={classes.my1}
                                     getOptionLabel={(option) => option.name}
                                     onChange={(event, value) => setUser(value)}
-                                    renderInput={(params) => <TextField {...params} size='small' label="User *" variant="outlined" helperText={errUser} error={errUser} />}
+                                    renderInput={
+                                        (params) => (
+                                            <TextField
+                                                {...params}
+                                                size='small'
+                                                label="User *"
+                                                variant="outlined"
+                                                helperText={errUser}
+                                                error={errUser ? true : false}
+                                            />
+                                        )
+                                    }
                                 />
                             )
                             : null
                     }
                     <TextField
                         size="small"
-                        label="Assignment Title *"
-                        error={errTitle}
-                        helperText={errTitle}
                         variant="outlined"
+                        label="Assignment Title *"
                         className={classes.my1}
+                        helperText={errTitle}
+                        error={errTitle ? true : false}
                         onChange={e => setTitle(e.target.value)}
+                        value={title}
+                    />
+                    <TextField
+                        size="small"
+                        type="number"
+                        variant="outlined"
+                        label="Duration (hours) *"
+                        className={classes.my1}
+                        helperText={errDuration}
+                        error={errDuration ? true : false}
+                        onChange={e => e.target.value > 0 ? setDuration(e.target.value) : null}
+                        value={duration}
                     />
                     <TextField
                         multiline
