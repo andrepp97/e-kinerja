@@ -5,7 +5,7 @@ import AuthProvider from './context/authProvider';
 import App from './App';
 
 // STYLE
-import './main.css';
+import './assets/main.css';
 import 'filepond/dist/filepond.min.css'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 
