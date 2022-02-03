@@ -23,8 +23,8 @@ module.exports = {
             sqlDB.query(query2, (err2, results2) => {
                 if (err2) return res.status(500).send(err2)
 
-                if (results2[0].status === 'inactive') return res.status(403).send('User Inactive')
                 if (results2.length === 0) return res.status(403).send('Wrong Password')
+                if (results2.length && results2[0].status === 'inactive') return res.status(403).send('User Inactive')
 
                 let token = createJWTToken({ ...results2[0] }, { expiresIn: '24h' })
                 res.status(200).send({ ...results2[0], token })
@@ -65,12 +65,12 @@ module.exports = {
                           SET clock_out = '${req.body.clock_out}'
                           WHERE user_id = ${req.body.user_id}
                           AND created_date = curdate()`
-                if (results[0].clock_out != null) {
+                if (results[0].clock_out != '00:00:00') {
                     res.status(400).send('You already clocked out today')
                     return
                 }
             } else {
-                query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
+                return res.status(400).send("You haven't clocked in today")
             }
 
             sqlDB.query(query2, (err, results) => {
@@ -82,7 +82,7 @@ module.exports = {
     },
 
     getAttendanceList: (req, res) => {
-        let query = `SELECT *
+        let query = `SELECT *, if(clock_in <> '00:00:00' AND clock_out <> '00:00:00', timediff(clock_out, clock_in), '---') as 'total'
                      FROM attendances
                      WHERE substring(created_date, 6, 2) = ${req.body.month}
                      AND year(created_date) = year(now())
@@ -111,10 +111,21 @@ module.exports = {
     },
 
     getRecentAttendance: (req, res) => {
-        let query = `SELECT * FROM attendances
-                    WHERE user_id = ${req.query.id}
-                    ORDER BY created_date DESC
-                    LIMIT 3`
+        let query = `SELECT *
+                     FROM attendances
+                     WHERE user_id = ${req.query.id}
+                     ORDER BY created_date DESC
+                     LIMIT 3`
+
+        sqlDB.query(query, (err, results) => {
+            if (err) return res.status(500).send(err)
+
+            res.status(200).send(results)
+        })
+    },
+
+    updateDuration: (req, res) => {
+        let query = `UPDATE assignments SET duration = ${req.body.duration} WHERE id = ${req.body.id}`
 
         sqlDB.query(query, (err, results) => {
             if (err) return res.status(500).send(err)
