@@ -8,6 +8,7 @@ import {
     Attendance,
     Assignment,
     PageNotFound,
+    UserDetail,
     Users,
 } from '../pages';
 
@@ -45,6 +46,14 @@ const Router = () => {
                 element={
                     <PrivateRoute>
                         <Users />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/user/:id"
+                element={
+                    <PrivateRoute>
+                        <UserDetail />
                     </PrivateRoute>
                 }
             />
