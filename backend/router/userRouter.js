@@ -10,6 +10,7 @@ router.post('/clockOut', userController.userClockOut)
 router.post('/getAttendanceList', userController.getAttendanceList)
 router.get('/getRecentTask', userController.getRecentTask)
 router.get('/getRecentAttendance', userController.getRecentAttendance)
+router.post('/updateDuration', userController.updateDuration)
 router.post('/uploadAttachment', userController.uploadAttachment)
 
 module.exports = router
