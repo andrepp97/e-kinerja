@@ -120,7 +120,7 @@ const App = () => {
 
     // Render
     return (
-        <div>
+        <div style={{ background: '#F4F4F4' }}>
 
             {
                 userState.isLogin
