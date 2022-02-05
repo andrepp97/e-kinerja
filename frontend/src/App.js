@@ -4,9 +4,25 @@ import clsx from 'clsx';
 import { Sidebar } from './components';
 import { useAuth } from './context/authProvider';
 import { makeStyles } from '@material-ui/core/styles';
+import { indigo, deepPurple } from '@material-ui/core/colors';
 
 const drawerWidth = 225;
 const useStyles = makeStyles((theme) => ({
+    deepPurple: {
+        color: theme.palette.getContrastText(deepPurple[500]),
+        backgroundColor: deepPurple[500],
+    },
+    indigo: {
+        color: theme.palette.getContrastText(indigo[500]),
+        backgroundColor: indigo[500],
+    },
+    nameText: {
+        marginTop: '12px',
+        fontSize: '18px',
+        fontWeight: '500',
+        letterSpacing: '.5px',
+        opacity: .8,
+    },
     appBar: {
         backgroundColor: '#fecd1a',
         color: '#565656',

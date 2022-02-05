@@ -45,6 +45,7 @@ const useStyles = makeStyles(() => ({
         fontWeight: '600',
     },
     time: {
+        fontFamily: 'Segoe UI',
         fontSize: '3.5vw',
         color: '#606060',
     },
@@ -201,67 +202,69 @@ const Attendance = () => {
                     renderInput={(params) => <TextField {...params} size='small' label="Select Month" variant="outlined" />}
                     value={selectedMonth}
                 />
-                <Table style={{ width: 'auto' }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
-                                Clock In
-                            </TableCell>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
-                                Clock Out
-                            </TableCell>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
-                                Total Hour(s)
-                            </TableCell>
-                            <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
-                                Date
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {
-                            data
-                                ? data.length
-                                    ? data.map((row) => (
-                                        <TableRow
-                                            hover
-                                            key={row.id}
-                                            selected={moment(row.created_date).format('YYYY MM DD') === curdate}
-                                        >
-                                            <TableCell>
-                                                {row.clock_in === null || row.clock_in === '00:00:00' ? '---' : row.clock_in}
-                                            </TableCell>
-                                            <TableCell>
-                                                {row.clock_out === null || row.clock_out === '00:00:00' ? '---' : row.clock_out}
-                                            </TableCell>
-                                            <TableCell>
-                                                {timeDiffFormat(row.total)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {
-                                                    moment(row.created_date).format('YYYY MM DD') === curdate
-                                                        ? (
-                                                            <>
-                                                                {moment(row.created_date).format('DD MMMM YYYY')}
-                                                                <strong className='ml-2'>(Today)</strong>
-                                                            </>
-                                                        )
-                                                        : moment(row.created_date).format('DD MMMM YYYY')
-                                                }
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                    : (
-                                        <TableRow>
-                                            <TableCell>
-                                                Currently nothing to show here
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                : null
-                        }
-                    </TableBody>
-                </Table>
+                <Paper elevation={0} style={{ width: '100%' }}>
+                    <Table style={{ width: '100%' }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Clock In
+                                </TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Clock Out
+                                </TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Total Hour(s)
+                                </TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Date
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {
+                                data
+                                    ? data.length
+                                        ? data.map((row) => (
+                                            <TableRow
+                                                hover
+                                                key={row.id}
+                                                selected={moment(row.created_date).format('YYYY MM DD') === curdate}
+                                            >
+                                                <TableCell>
+                                                    {row.clock_in === null || row.clock_in === '00:00:00' ? '---' : row.clock_in}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.clock_out === null || row.clock_out === '00:00:00' ? '---' : row.clock_out}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {timeDiffFormat(row.total)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {
+                                                        moment(row.created_date).format('YYYY MM DD') === curdate
+                                                            ? (
+                                                                <>
+                                                                    {moment(row.created_date).format('DD MMMM YYYY')}
+                                                                    <strong className='ml-2'>(Today)</strong>
+                                                                </>
+                                                            )
+                                                            : moment(row.created_date).format('DD MMMM YYYY')
+                                                    }
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                        : (
+                                            <TableRow>
+                                                <TableCell>
+                                                    Currently nothing to show here
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    : null
+                            }
+                        </TableBody>
+                    </Table>
+                </Paper>
             </div>
 
         </div>

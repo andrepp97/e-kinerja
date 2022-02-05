@@ -54,14 +54,14 @@ const TaskPopup = (props) => {
             setErrTitle('')
         }
 
-        if (userState.role == 2 && !duration) {
+        if (userState.role === 2 && !duration) {
             err = "Duration must be greater than 0"
             setErrDuration("Duration must be greater than 0")
         } else {
             setErrDuration('')
         }
 
-        if (userState.role == 1 && !user) {
+        if (userState.role === 1 && !user) {
             err = "You didn't select any user"
             setErrUser("Please select a user")
         } else {
@@ -70,10 +70,11 @@ const TaskPopup = (props) => {
 
         if (!err) {
             const body = {
-                user_id: userState.role == 1 ? user.id : userState.id,
+                user_id: userState.role === 1 ? user.id : userState.id,
                 admin_id: null,
                 task_title: title,
                 task_desc: desc,
+                duration,
                 attachment: null,
             }
 

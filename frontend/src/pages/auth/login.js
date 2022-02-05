@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import Swal from 'sweetalert2'
 import clsx from 'clsx';
-import Card from '@material-ui/core/Card';
+import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -86,30 +86,33 @@ const Login = () => {
         if (!inputValidation()) {
             setLoading(true)
 
-            httpRequest.post('/user/login', { ...state })
-                .then(({ data }) => {
-                    const obj = {
-                        id: data.id,
-                        role: data.role,
-                        name: data.name,
-                        username: data.username,
-                        userToken: data.token,
-                    }
-                    localStorage.setItem('@ekinerja/token', JSON.stringify(obj))
-                    dispatch({
-                        ...obj,
-                        type: 'LOGIN',
+            setTimeout(() => {
+                httpRequest.post('/user/login', { ...state })
+                    .then(({ data }) => {
+                        const obj = {
+                            id: data.id,
+                            role: data.role,
+                            name: data.name,
+                            username: data.username,
+                            userToken: data.token,
+                        }
+                        localStorage.setItem('@ekinerja/token', JSON.stringify(obj))
+                        dispatch({
+                            ...obj,
+                            type: 'LOGIN',
+                        })
                     })
-                })
-                .catch((err) => {
-                    // console.log(err.response)
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Unauthorized',
-                        text: err.response.data || '',
-                        didClose: () => setLoading(false),
+                    .catch((err) => {
+                        console.log(err)
+                        Swal.fire({
+                            icon: 'error',
+                            title: err.response ? 'Unauthorized' : err,
+                            text: err.response ? err.response.data : '',
+                            didClose: () => setLoading(false),
+                        })
                     })
-                })
+                    .finally(() => setLoading(false))
+            }, 750)
         }
     }
 
@@ -124,7 +127,7 @@ const Login = () => {
         ? <Navigate to="/dashboard" />
         : (
             <div id="login-bg" className={classes.root}>
-                <Card className={classes.loginCard}>
+                <Paper className={classes.loginCard} elevation={8}>
 
                     <div className='flex-center my-3 px-2'>
                         <img
@@ -167,7 +170,7 @@ const Login = () => {
                         }
                     </Button>
 
-                </Card>
+                </Paper>
             </div>
         );
 };

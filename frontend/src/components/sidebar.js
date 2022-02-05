@@ -7,13 +7,16 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import MenuIcon from '@material-ui/icons/Menu';
+import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Avatar from '@material-ui/core/Avatar';
 import { Assignment, Dashboard, DoneAll, People, ExitToApp } from '@material-ui/icons';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/authProvider';
 
+// Static
 const adminSideMenu = [
     {
         label: 'Dashboard',
@@ -31,7 +34,6 @@ const adminSideMenu = [
         icon: <People />,
     },
 ]
-
 const userSideMenu = [
     {
         label: 'Dashboard',
@@ -93,11 +95,35 @@ const Sidebar = (props) => {
         >
             <div className={classes.toolbar}>
                 <IconButton onClick={handleDrawerClose}>
-                    <MenuIcon />
+                    {
+                        isOpen
+                        ? <MenuOpenIcon />
+                        : <MenuIcon />
+                    }
                 </IconButton>
             </div>
             <Divider />
-            <List>
+            <div className='flex-column-center my-2 py-2 px-1'>
+                <Avatar className={userState.role === 1 ? classes.deepPurple : classes.indigo}>
+                    {userState && userState.name.substring(0, 1)}
+                </Avatar>
+                {isOpen && (
+                    <span className={classes.nameText}>
+                        {userState && userState.name}
+                    </span>
+                )}
+                <Button
+                    size='small'
+                    color='secondary'
+                    variant='outlined'
+                    onClick={handleLogout}
+                    className={isOpen ? 'btn-logout' : 'btn-logout2'}
+                >
+                    {isOpen ? 'Logout' : <ExitToApp fontSize='small' />}
+                </Button>
+            </div>
+            <Divider />
+            <List className='mt-2'>
                 {
                     userState.role === 1
                         ? adminSideMenu.map((menu, idx) => (
@@ -138,14 +164,6 @@ const Sidebar = (props) => {
                         ))
                 }
             </List>
-            <Button
-                color='secondary'
-                variant='outlined'
-                onClick={handleLogout}
-                className={isOpen ? 'btn-logout' : 'btn-logout2'}
-            >
-                {isOpen ? 'Logout' : <ExitToApp fontSize='small' />}
-            </Button>
         </Drawer>
     );
 };
