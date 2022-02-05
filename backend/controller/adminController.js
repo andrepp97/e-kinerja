@@ -84,8 +84,16 @@ module.exports = {
     },
 
     createAssignment: (req, res) => {
+        const {
+            user_id,
+            admin_id,
+            task_title,
+            task_desc,
+            duration,
+        } = req.body
+
         let query = `INSERT INTO assignments
-                     VALUES (null, ${req.body.user_id}, ${req.body.admin_id}, '${req.body.task_title}', '${req.body.task_desc}', null, 'ongoing', now())`
+                     VALUES (null, ${user_id}, ${admin_id}, '${task_title}', '${task_desc}', ${duration}, null, 'ongoing', now())`
         sqlDB.query(query, (err, results) => {
             if (err) return res.status(500).send(err)
 
