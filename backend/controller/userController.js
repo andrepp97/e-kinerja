@@ -88,13 +88,13 @@ module.exports = {
 
                 conn.query(query2, (err, results) => {
                     conn.release()
-                    
+
                     if (err) return res.status(500).send(err)
 
                     res.status(200).send(results)
                 })
             })
-        }
+        })
     },
 
     getAttendanceList: (req, res) => {
