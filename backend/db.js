@@ -1,13 +1,14 @@
 const mysql = require('mysql')
 
-const conn = mysql.createConnection({
+const conn = mysql.createPool({
     /**LOCAL DB HOST */
+    connectionLimit: 10,
     host: 'localhost',
     port: 3306,
     user: 'root',
     password: 'foresta',
     database: 'ekinerja',
-    timezone: 'UTC'
+    timezone: 'UTC',
 })
 
 module.exports = {

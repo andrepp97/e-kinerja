@@ -7,46 +7,57 @@ const secret = 'ekinerja'
 
 module.exports = {
     userLogin: (req, res) => {
-        let { username, password } = req.body;
-        password = crypto.createHmac('sha256', secret).update(password).digest('hex')
+        sqlDB.getConnection((err, conn) => {
+            if (err) res.status(500).send(err)
 
-        let query = `SELECT * FROM users WHERE username = '${username}'`
+            let { username, password } = req.body;
+            password = crypto.createHmac('sha256', secret).update(password).digest('hex')
 
-        sqlDB.query(query, (err, results) => {
-            if (err) return res.status(500).send(err)
-            if (results.length === 0) return res.status(404).send('Username Not Found')
+            let query = `SELECT username FROM users WHERE username = '${username}'`
 
-            let query2 = `SELECT *
-                          FROM users
-                          WHERE username = '${username}' AND password = '${password}'`
+            conn.query(query, (err, results) => {
+                connection.release()
 
-            sqlDB.query(query2, (err2, results2) => {
-                if (err2) return res.status(500).send(err2)
+                if (err) return res.status(500).send(err)
+                if (results.length === 0) return res.status(404).send('Username Not Found')
 
-                if (results2.length === 0) return res.status(403).send('Wrong Password')
-                if (results2.length && results2[0].status === 'inactive') return res.status(403).send('User Inactive')
+                let query2 = `SELECT *
+                              FROM users
+                              WHERE username = '${username}' AND password = '${password}'`
 
-                let token = createJWTToken({ ...results2[0] }, { expiresIn: '24h' })
-                res.status(200).send({ ...results2[0], token })
+                conn.query(query2, (err2, results2) => {
+                    connection.release()
+
+                    if (err2) return res.status(500).send(err2)
+                    if (results2.length === 0) return res.status(403).send('Wrong Password')
+                    if (results2.length && results2[0].status === 'inactive') return res.status(403).send('User Inactive')
+
+                    let token = createJWTToken({ ...results2[0] }, { expiresIn: '24h' })
+                    res.status(200).send({ ...results2[0], token })
+                })
             })
         })
     },
 
     userClockIn: (req, res) => {
-        const { user_id, clock_in, clock_out } = req.body
+        sqlDB.getConnection((err, conn) => {
+            if (err) res.status(500).send(err)
 
-        let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
-        sqlDB.query(query, (err, results) => {
-            if (results.length > 0) {
-                res.status(400).send('You already clocked in today')
-                return
-            }
+            const { user_id, clock_in, clock_out } = req.body
+            let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
+            conn.query(query, (err, results) => {
+                if (err) res.status(500).send(err)
+                if (results.length > 0) {
+                    res.status(400).send('You already clocked in today')
+                    return
+                }
 
-            let query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
-            sqlDB.query(query2, req.body, (err2, results2) => {
-                if (err2) return res.status(500).send(err2)
+                let query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
+                conn.query(query2, req.body, (err2, results2) => {
+                    if (err2) return res.status(500).send(err2)
 
-                res.status(200).send(results2)
+                    res.status(200).send(results2)
+                })
             })
         })
     },
