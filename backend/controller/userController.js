@@ -16,8 +16,6 @@ module.exports = {
             let query = `SELECT username FROM users WHERE username = '${username}'`
 
             conn.query(query, (err, results) => {
-                connection.release()
-
                 if (err) return res.status(500).send(err)
                 if (results.length === 0) return res.status(404).send('Username Not Found')
 
@@ -26,7 +24,7 @@ module.exports = {
                               WHERE username = '${username}' AND password = '${password}'`
 
                 conn.query(query2, (err2, results2) => {
-                    connection.release()
+                    conn.release()
 
                     if (err2) return res.status(500).send(err2)
                     if (results2.length === 0) return res.status(403).send('Wrong Password')
@@ -54,6 +52,8 @@ module.exports = {
 
                 let query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
                 conn.query(query2, req.body, (err2, results2) => {
+                    conn.release()
+
                     if (err2) return res.status(500).send(err2)
 
                     res.status(200).send(results2)
@@ -63,33 +63,38 @@ module.exports = {
     },
 
     userClockOut: (req, res) => {
-        const { user_id, clock_in, clock_out } = req.body
+        sqlDB.getConnection((err, conn) => {
+            if (err) res.status(500).send(err)
 
-        let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${req.body.user_id}`
-        sqlDB.query(query, (err, results) => {
-            if (err) return res.status(500).send(err)
-
-            let query2 = ''
-
-            if (results.length > 0) {
-                query2 = `UPDATE attendances
-                          SET clock_out = '${req.body.clock_out}'
-                          WHERE user_id = ${req.body.user_id}
-                          AND created_date = curdate()`
-                if (results[0].clock_out != '00:00:00') {
-                    res.status(400).send('You already clocked out today')
-                    return
-                }
-            } else {
-                return res.status(400).send("You haven't clocked in today")
-            }
-
-            sqlDB.query(query2, (err, results) => {
+            const { user_id, clock_out } = req.body
+            let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
+            conn.query(query, (err, results) => {
                 if (err) return res.status(500).send(err)
 
-                res.status(200).send(results)
+                let query2 = ''
+
+                if (results.length > 0) {
+                    query2 = `UPDATE attendances
+                          SET clock_out = '${clock_out}'
+                          WHERE user_id = ${user_id}
+                          AND created_date = curdate()`
+                    if (results[0].clock_out != '00:00:00') {
+                        res.status(400).send('You already clocked out today')
+                        return
+                    }
+                } else {
+                    return res.status(400).send("You haven't clocked in today")
+                }
+
+                conn.query(query2, (err, results) => {
+                    conn.release()
+                    
+                    if (err) return res.status(500).send(err)
+
+                    res.status(200).send(results)
+                })
             })
-        })
+        }
     },
 
     getAttendanceList: (req, res) => {
