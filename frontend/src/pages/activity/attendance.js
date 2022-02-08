@@ -94,6 +94,15 @@ const Attendance = () => {
             .catch(err => console.log(err.response))
     }, [userState, selectedMonth])
 
+    // Function
+    const tick = () => setDate(new Date())
+
+    const getCurentMonth = () => {
+        const d = new Date()
+        const month = d.getMonth()
+        setSelectedMonth(months[month])
+    }
+    
     // Lifecycle
     useEffect(() => {
         const timerID = setInterval(() => tick(), 1000)
@@ -108,14 +117,6 @@ const Attendance = () => {
         if (selectedMonth) getAttendanceList()
     }, [selectedMonth, getAttendanceList])
 
-    // Function
-    const tick = () => setDate(new Date())
-
-    const getCurentMonth = () => {
-        const d = new Date()
-        const month = d.getMonth()
-        setSelectedMonth(months[month])
-    }
 
     const userClockIn = (type) => {
         setLoading(true)
