@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Swal from 'sweetalert2';
 import clsx from 'clsx';
 import List from '@material-ui/core/List';
@@ -13,7 +13,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import { Assignment, Dashboard, DoneAll, People, ExitToApp } from '@material-ui/icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authProvider';
 
 // Static
@@ -53,15 +53,16 @@ const userSideMenu = [
 ]
 
 const Sidebar = (props) => {
+    // Variables
     const {
         isOpen,
         classes,
         handleDrawerClose,
     } = props
-
+    const { pathname } = useLocation()
     const { userState, dispatch } = useAuth()
-    const [path, setPath] = useState('')
 
+    // Function
     const handleLogout = () => {
         Swal.fire({
             title: `Are you sure want to logout ?`,
@@ -79,6 +80,7 @@ const Sidebar = (props) => {
         })
     }
 
+    // Render
     return (
         <Drawer
             variant="permanent"
@@ -134,8 +136,7 @@ const Sidebar = (props) => {
                             >
                                 <ListItem
                                     button
-                                    selected={menu.url === path}
-                                    onClick={() => setPath(menu.url)}
+                                    selected={menu.url === pathname}
                                 >
                                     <ListItemIcon>
                                         {menu.icon}
@@ -152,8 +153,7 @@ const Sidebar = (props) => {
                             >
                                 <ListItem
                                     button
-                                    selected={menu.url === path}
-                                    onClick={() => setPath(menu.url)}
+                                    selected={menu.url === pathname}
                                 >
                                     <ListItemIcon>
                                         {menu.icon}
