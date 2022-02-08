@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
+import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -54,6 +56,12 @@ const useStyles = makeStyles(() => ({
     root: {
         padding: '42px 30px',
     },
+    tableHeader: {
+        marginTop: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
     opacity70: {
         opacity: .7
     },
@@ -78,6 +86,7 @@ const useStyles = makeStyles(() => ({
 }))
 const baseUrl = 'http://localhost:2000'
 const curdate = moment(new Date()).format('YYYY MM DD')
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const timeDiffFormat = (time) => {
     if (time !== '---') {
         const arr = time.split(':')
@@ -104,6 +113,7 @@ const UserDetail = () => {
     const [data, setData] = useState(null)
     const [assignments, setAssignments] = useState([])
     const [attendances, setAttendances] = useState([])
+    const [selectedMonth, setSelectedMonth] = useState(null)
 
     // Get Data
     const getUserDetail = useCallback(() => {
@@ -130,22 +140,39 @@ const UserDetail = () => {
     }
 
     const getUserAttendance = useCallback(() => {
-        httpRequest.get('admin/getAttendanceById', { params: { id } })
+        const body = {
+            id: id,
+            month: months.indexOf(selectedMonth) + 1,
+        }
+        httpRequest.post('user/getAttendanceList', body)
             .then(({ data }) => setAttendances(data))
             .catch(err => console.log(err.response))
-    }, [id])
-
-    // Lifecycle
-    useEffect(() => {
-        getUserDetail()
-        getUserAssignment()
-        getUserAttendance()
-    }, [id, getUserDetail, getUserAssignment, getUserAttendance])
+    }, [id, selectedMonth])
 
     // Function
     const handleChange = (event, newValue) => {
         setValue(newValue)
     }
+
+    const getCurentMonth = () => {
+        const d = new Date()
+        const month = d.getMonth()
+        setSelectedMonth(months[month])
+    }
+
+    // Lifecycle
+    useEffect(() => {
+        getCurentMonth()
+    }, [])
+    
+    useEffect(() => {
+        getUserDetail()
+        getUserAssignment()
+    }, [id, getUserDetail, getUserAssignment])
+
+    useEffect(() => {
+        if (selectedMonth) getUserAttendance()
+    }, [selectedMonth, getUserAttendance])
 
     // Render
     return (
@@ -256,7 +283,15 @@ const UserDetail = () => {
             </TabPanel>
 
             <TabPanel value={value} index={1}>
-                <div className='text-right mt-2'>
+                <div className={classes.tableHeader}>
+                    <Autocomplete
+                        options={months}
+                        style={{ width: '200px' }}
+                        getOptionLabel={(option) => option}
+                        onChange={(event, value) => setSelectedMonth(value)}
+                        renderInput={(params) => <TextField {...params} size='small' label="Select Month" variant="outlined" />}
+                        value={selectedMonth}
+                    />
                     <ReactHTMLTableToExcel
                         sheet="Attendances"
                         table="attendance-table"
