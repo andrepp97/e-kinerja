@@ -139,4 +139,16 @@ module.exports = {
             res.status(200).send(results)
         })
     },
+
+    updateUserDesc: (req, res) => {
+        let query = `UPDATE attendances a
+                     SET a.desc = '${req.body.desc}'
+                     WHERE id = ${req.body.id}`
+
+        sqlDB.query(query, (err, results) => {
+            if (err) return res.status(500).send(err)
+
+            res.status(200).send(results)
+        })
+    },
 }
