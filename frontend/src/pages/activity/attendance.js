@@ -102,7 +102,12 @@ const Attendance = () => {
         const month = d.getMonth()
         setSelectedMonth(months[month])
     }
-    
+
+    const daysInMonth = (month, year) => {
+        const total = new Date(year, month, 0).getDate()
+        return total
+    }
+
     // Lifecycle
     useEffect(() => {
         const timerID = setInterval(() => tick(), 1000)
@@ -114,7 +119,9 @@ const Attendance = () => {
     }, [])
 
     useEffect(() => {
-        if (selectedMonth) getAttendanceList()
+        if (selectedMonth) {
+            getAttendanceList()
+        }
     }, [selectedMonth, getAttendanceList])
 
 
@@ -219,6 +226,9 @@ const Attendance = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>
                                     Date
                                 </TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>
+                                    Desc
+                                </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -251,6 +261,9 @@ const Attendance = () => {
                                                             )
                                                             : moment(row.created_date).format('DD MMMM YYYY')
                                                     }
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row.desc}
                                                 </TableCell>
                                             </TableRow>
                                         ))
