@@ -16,6 +16,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import PropTypes from 'prop-types';
 import moment from 'moment';
+import UserLeave from './userLeave';
 import httpRequest from '../../api/axios';
 import ReactHTMLTableToExcel from 'react-html-table-to-excel';
 
@@ -164,7 +165,7 @@ const UserDetail = () => {
     useEffect(() => {
         getCurentMonth()
     }, [])
-    
+
     useEffect(() => {
         getUserDetail()
         getUserAssignment()
@@ -304,17 +305,20 @@ const UserDetail = () => {
                     <Table id='attendance-table'>
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
+                                <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
                                     Clock In
                                 </TableCell>
-                                <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
+                                <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
                                     Clock Out
                                 </TableCell>
-                                <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
+                                <TableCell style={{ fontWeight: 'bold', minWidth: '12vw' }}>
                                     Total Hour(s)
                                 </TableCell>
-                                <TableCell style={{ fontWeight: 'bold', minWidth: '14vw' }}>
+                                <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
                                     Date
+                                </TableCell>
+                                <TableCell style={{ fontWeight: 'bold', minWidth: '10vw' }}>
+                                    Desc
                                 </TableCell>
                             </TableRow>
                         </TableHead>
@@ -346,6 +350,13 @@ const UserDetail = () => {
                                                             </>
                                                         )
                                                         : moment(row.created_date).format('DD MMMM YYYY')
+                                                }
+                                            </TableCell>
+                                            <TableCell>
+                                                {
+                                                    row.clock_in === '00:00:00' && row.clock_out === '00:00:00'
+                                                        ? <UserLeave data={row} httpRequest={httpRequest} refresh={getUserAttendance} />
+                                                        : row.desc
                                                 }
                                             </TableCell>
                                         </TableRow>
