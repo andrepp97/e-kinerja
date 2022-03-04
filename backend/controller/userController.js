@@ -5,6 +5,12 @@ const { uploader } = require('../helper/uploader')
 const { createJWTToken } = require('../helper/jwt')
 const secret = 'ekinerja'
 
+const d = new Date()
+const year = d.getFullYear()
+const month = d.getMonth() + 1
+const date = d.getDate()
+const daysInMonth = new Date(year, month, 0).getDate()
+
 module.exports = {
     userLogin: (req, res) => {
         sqlDB.getConnection((err, conn) => {
@@ -29,6 +35,25 @@ module.exports = {
                     if (err2) return res.status(500).send(err2)
                     if (results2.length === 0) return res.status(403).send('Wrong Password')
                     if (results2.length && results2[0].status === 'inactive') return res.status(403).send('User Inactive')
+                    if (results2.length && results2[0].id != 1 && results2[0].id != 2) {
+                        let selectAbsen = `SELECT created_date FROM attendances WHERE user_id = ${results2[0].id} AND substr(created_date, 6, 2) = ${month}`
+                        conn.query(selectAbsen, (err, res) => {
+                            if (res.length === 0) {
+                                let queryAbsen = "INSERT INTO attendances (user_id, clock_in, clock_out, created_date) VALUES ?"
+                                let arrayAbsen = []
+
+                                for (let i = 0; i < daysInMonth; i++) {
+                                    arrayAbsen.push([results2[0].id, '00:00:00', '00:00:00', `${year}-${month}-${i + 1}`])
+                                }
+
+                                conn.query(queryAbsen, [arrayAbsen], (err3) => {
+                                    if (err3) console.log(err3)
+                                    return
+                                })
+                                return
+                            }
+                        })
+                    }
 
                     let token = createJWTToken({ ...results2[0] }, { expiresIn: '24h' })
                     res.status(200).send({ ...results2[0], token })
@@ -41,16 +66,19 @@ module.exports = {
         sqlDB.getConnection((err, conn) => {
             if (err) res.status(500).send(err)
 
-            const { user_id, clock_in, clock_out } = req.body
-            let query = `SELECT * FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
+            const { user_id, clock_in } = req.body
+            let query = `SELECT clock_in FROM attendances WHERE created_date = curdate() AND user_id = ${user_id}`
             conn.query(query, (err, results) => {
                 if (err) res.status(500).send(err)
-                if (results.length > 0) {
+                if (results[0].clock_in !== '00:00:00') {
                     res.status(400).send('You already clocked in today')
                     return
                 }
 
-                let query2 = `INSERT INTO attendances VALUES (null, ${user_id}, '${clock_in}', '${clock_out}', now())`
+                let query2 = `UPDATE attendances
+                              SET clock_in = '${clock_in}'
+                              WHERE user_id = ${user_id} AND created_date = curdate()`
+
                 conn.query(query2, req.body, (err2, results2) => {
                     conn.release()
 
@@ -103,7 +131,7 @@ module.exports = {
                      WHERE substring(created_date, 6, 2) = ${req.body.month}
                      AND year(created_date) = year(now())
                      AND user_id = ${req.body.id}
-                     ORDER BY created_date DESC`
+                     ORDER BY created_date ASC`
 
         sqlDB.query(query, (err, results) => {
             if (err) return res.status(500).send(err)
